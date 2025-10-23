@@ -1,0 +1,150 @@
+---
+import InputField from "@/components/forms/Input.astro";
+import Select from "@/components/forms/Select.astro";
+---
+
+<dialog 
+    popover 
+    id="new-health-check" 
+    class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 m-0 p-0 border-none rounded-lg shadow-2xl max-w-md w-[90%] bg-white max-h-[90vh] overflow-y-auto"
+>
+    <div class="flex flex-col gap-4 p-6">
+        <div>
+            <h2 class="text-2xl font-semibold">New Health Check</h2>
+            <p class="text-gray-500 text-sm mt-1">Define parameters to monitor your HTTP endpoint</p>
+        </div>
+        
+        <InputField 
+            id="name" 
+            label="Name" 
+            placeholder="My API Health Check" 
+        />
+
+        <InputField 
+            id="url" 
+            label="URL" 
+            placeholder="https://api.example.com/health" 
+        />
+
+        <div class="flex gap-4">
+            <div class="flex-1">
+                <InputField 
+                    id="interval" 
+                    label="Check Interval (seconds)" 
+                    placeholder="60"
+                    type="number"
+                />
+            </div>
+
+            <Select 
+                id="http-method" 
+                label="HTTP Method" 
+                options={["GET", "POST", "PUT", "DELETE"]}
+            />
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+                <label class="font-medium text-sm">Headers</label>
+                <button
+                    type="button"
+                    id="add-header-btn"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M5 12h14"></path>
+                        <path d="M12 5v14"></path>
+                    </svg>
+                    Add Header
+                </button>
+            </div>
+            
+            <div id="headers-container" class="space-y-2">
+                <div class="flex gap-2 items-start">
+                    <input type="text" placeholder="Key" autocomplete="off" class="flex-1 border border-gray-300 placeholder:text-gray-400 p-2 rounded-lg text-sm focus:outline-none" />
+                    <input type="text" placeholder="Value" autocomplete="off" class="flex-1 border border-gray-300 placeholder:text-gray-400 p-2 rounded-lg text-sm focus:outline-none" />
+                    <button type="button" class="remove-header-btn p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6 6 18"></path>
+                            <path d="m6 6 12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <label for="expected-body" class="font-medium text-sm">Expected Body <span class="text-gray-400 font-normal">(optional)</span></label>
+            <textarea
+                id="expected-body"
+                name="expected-body"
+                placeholder='{"status": "ok", "version": "1.0.0"}'
+                autocomplete="off"
+                class="border border-gray-300 placeholder:text-gray-400 p-2 rounded-lg focus:outline-none resize-none font-mono text-sm h-[170px]"
+            ></textarea>
+        </div>
+
+        <div class="flex gap-3 mt-2">
+            <button type="button" class="bg-black hover:bg-gray-800 text-white py-2 px-4 rounded-lg flex-1 transition-colors font-medium">
+                Create Health Check
+            </button>
+            <button 
+                type="button"
+                popovertarget="new-health-check" 
+                popovertargetaction="hide"
+                class="border border-gray-300 hover:bg-gray-50 py-2 px-4 rounded-lg transition-colors font-medium"
+            >
+                Cancel
+            </button>
+        </div>
+    </div>
+</dialog>
+
+<style>
+    #new-health-check::backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+    }
+</style>
+
+<script type="module">
+    const addHeaderBtn = document.getElementById('add-header-btn');
+    const headersContainer = document.getElementById('headers-container');
+
+    addHeaderBtn?.addEventListener('click', () => {
+        const row = document.createElement('div');
+        row.className = 'flex gap-2 items-start';
+        row.innerHTML = `
+            <input type="text" placeholder="Key" autocomplete="off" class="flex-1 border border-gray-300 placeholder:text-gray-400 p-2 rounded-lg text-sm focus:outline-none" />
+            <input type="text" placeholder="Value" autocomplete="off" class="flex-1 border border-gray-300 placeholder:text-gray-400 p-2 rounded-lg text-sm focus:outline-none" />
+            <button type="button" class="remove-header-btn p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6 6 18"></path>
+                    <path d="m6 6 12 12"></path>
+                </svg>
+            </button>
+        `;
+        
+        row.querySelector('.remove-header-btn')?.addEventListener('click', () => row.remove());
+        headersContainer?.appendChild(row);
+    });
+
+    headersContainer?.addEventListener('click', (e) => {
+        const target = e.target;
+        const removeBtn = target.closest('.remove-header-btn');
+        if (removeBtn) {
+            const row = removeBtn.closest('.flex');
+            row?.remove();
+        }
+    });
+</script>
