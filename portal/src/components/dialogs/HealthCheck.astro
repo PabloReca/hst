@@ -8,20 +8,25 @@ import Select from "@/components/forms/Select.astro";
     id="new-health-check" 
     class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 m-0 p-0 border-none rounded-lg shadow-2xl max-w-md w-[90%] bg-white max-h-[90vh] overflow-y-auto"
 >
-    <div class="flex flex-col gap-4 p-6">
+    <form 
+        id="health-check-form"
+        class="flex flex-col gap-4 p-6"
+    >
         <div>
             <h2 class="text-2xl font-semibold">New Health Check</h2>
             <p class="text-gray-500 text-sm mt-1">Define parameters to monitor your HTTP endpoint</p>
         </div>
         
         <InputField 
-            id="name" 
+            id="name"
+            name="name"
             label="Name" 
             placeholder="My API Health Check" 
         />
 
         <InputField 
-            id="url" 
+            id="url"
+            name="url"
             label="URL" 
             placeholder="https://api.example.com/health" 
         />
@@ -29,7 +34,8 @@ import Select from "@/components/forms/Select.astro";
         <div class="flex gap-4">
             <div class="flex-1">
                 <InputField 
-                    id="interval" 
+                    id="interval"
+                    name="interval"
                     label="Check Interval (seconds)" 
                     placeholder="60"
                     type="number"
@@ -37,11 +43,20 @@ import Select from "@/components/forms/Select.astro";
             </div>
 
             <Select 
-                id="http-method" 
+                id="http-method"
+                name="method"
                 label="HTTP Method" 
                 options={["GET", "POST", "PUT", "DELETE"]}
             />
         </div>
+
+        <InputField 
+            id="status-code"
+            name="statusCode"
+            label="Expected Status Code" 
+            placeholder="200"
+            type="number"
+        />
 
         <div class="flex flex-col gap-2">
             <div class="flex items-center justify-between">
@@ -70,9 +85,9 @@ import Select from "@/components/forms/Select.astro";
             </div>
             
             <div id="headers-container" class="space-y-2">
-                <div class="flex gap-2 items-start">
-                    <input type="text" placeholder="Key" autocomplete="off" class="flex-1 border border-gray-300 placeholder:text-gray-400 p-2 rounded-lg text-sm focus:outline-none" />
-                    <input type="text" placeholder="Value" autocomplete="off" class="flex-1 border border-gray-300 placeholder:text-gray-400 p-2 rounded-lg text-sm focus:outline-none" />
+                <div class="flex gap-2 items-start header-row">
+                    <input type="text" placeholder="Key" autocomplete="off" class="header-key flex-1 border border-gray-300 placeholder:text-gray-400 p-2 rounded-lg text-sm focus:outline-none" />
+                    <input type="text" placeholder="Value" autocomplete="off" class="header-value flex-1 border border-gray-300 placeholder:text-gray-400 p-2 rounded-lg text-sm focus:outline-none" />
                     <button type="button" class="remove-header-btn p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 6 6 18"></path>
@@ -87,7 +102,6 @@ import Select from "@/components/forms/Select.astro";
             <label for="expected-body" class="font-medium text-sm">Expected Body <span class="text-gray-400 font-normal">(optional)</span></label>
             <textarea
                 id="expected-body"
-                name="expected-body"
                 placeholder='{"status": "ok", "version": "1.0.0"}'
                 autocomplete="off"
                 class="border border-gray-300 placeholder:text-gray-400 p-2 rounded-lg focus:outline-none resize-none font-mono text-sm h-[170px]"
@@ -95,7 +109,7 @@ import Select from "@/components/forms/Select.astro";
         </div>
 
         <div class="flex gap-3 mt-2">
-            <button type="button" class="bg-black hover:bg-gray-800 text-white py-2 px-4 rounded-lg flex-1 transition-colors font-medium">
+            <button type="submit" class="bg-black hover:bg-gray-800 text-white py-2 px-4 rounded-lg flex-1 transition-colors font-medium">
                 Create Health Check
             </button>
             <button 
@@ -107,7 +121,7 @@ import Select from "@/components/forms/Select.astro";
                 Cancel
             </button>
         </div>
-    </div>
+    </form>
 </dialog>
 
 <style>
@@ -118,15 +132,15 @@ import Select from "@/components/forms/Select.astro";
 </style>
 
 <script type="module">
-    const addHeaderBtn = document.getElementById('add-header-btn');
-    const headersContainer = document.getElementById('headers-container');
-
-    addHeaderBtn?.addEventListener('click', () => {
+    const form = document.getElementById('health-check-form');
+    const dialog = document.getElementById('new-health-check');
+    
+    document.getElementById('add-header-btn')?.addEventListener('click', () => {
         const row = document.createElement('div');
-        row.className = 'flex gap-2 items-start';
+        row.className = 'flex gap-2 items-start header-row';
         row.innerHTML = `
-            <input type="text" placeholder="Key" autocomplete="off" class="flex-1 border border-gray-300 placeholder:text-gray-400 p-2 rounded-lg text-sm focus:outline-none" />
-            <input type="text" placeholder="Value" autocomplete="off" class="flex-1 border border-gray-300 placeholder:text-gray-400 p-2 rounded-lg text-sm focus:outline-none" />
+            <input type="text" placeholder="Key" autocomplete="off" class="header-key flex-1 border border-gray-300 placeholder:text-gray-400 p-2 rounded-lg text-sm focus:outline-none" />
+            <input type="text" placeholder="Value" autocomplete="off" class="header-value flex-1 border border-gray-300 placeholder:text-gray-400 p-2 rounded-lg text-sm focus:outline-none" />
             <button type="button" class="remove-header-btn p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M18 6 6 18"></path>
@@ -134,17 +148,44 @@ import Select from "@/components/forms/Select.astro";
                 </svg>
             </button>
         `;
-        
-        row.querySelector('.remove-header-btn')?.addEventListener('click', () => row.remove());
-        headersContainer?.appendChild(row);
+        row.querySelector('.remove-header-btn').addEventListener('click', () => row.remove());
+        document.getElementById('headers-container').appendChild(row);
     });
 
-    headersContainer?.addEventListener('click', (e) => {
-        const target = e.target;
-        const removeBtn = target.closest('.remove-header-btn');
-        if (removeBtn) {
-            const row = removeBtn.closest('.flex');
-            row?.remove();
+    document.getElementById('headers-container')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('.remove-header-btn');
+        if (btn) btn.closest('.header-row').remove();
+    });
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const headers = {};
+        document.querySelectorAll('.header-row').forEach(row => {
+            const key = row.querySelector('.header-key').value;
+            const value = row.querySelector('.header-value').value;
+            if (key && value) headers[key] = value;
+        });
+
+        const data = {
+            name: document.getElementById('name').value,
+            url: document.getElementById('url').value,
+            interval: parseInt(document.getElementById('interval').value),
+            method: document.getElementById('http-method').value,
+            statusCode: parseInt(document.getElementById('status-code').value) || 200,
+            headers,
+            expectedBody: document.getElementById('expected-body').value || null
+        };
+
+        const response = await fetch('/api/health-checks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            form.reset();
+            dialog.hidePopover();
         }
     });
 </script>
