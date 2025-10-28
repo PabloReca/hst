@@ -228,7 +228,7 @@ func (e *LoadTestExecutor) saveLog(ctx context.Context, req LoadTestRequest, res
 		logEntry.Error = &errMsg
 	}
 	
-	collectionName := fmt.Sprintf("loadtesting_logs_%s", req.Name)
+	collectionName := fmt.Sprintf("loadtest_logs_%s", req.Name)
 	
 	if err := e.mongoHelper.InsertLog(ctx, collectionName, logEntry); err != nil {
 		// Error already logged in MongoHelper
@@ -327,7 +327,7 @@ func (e *LoadTestExecutor) processAndSaveResults(ctx context.Context, req LoadTe
 		Timestamp:          time.Now(),
 	}
 	
-	collectionName := "loadtesting_metrics"
+	collectionName := "loadtest_metrics"
 	
 	if err := e.mongoHelper.InsertMetrics(ctx, collectionName, result); err != nil {
 		return fmt.Errorf("error saving metrics: %v", err)
@@ -435,7 +435,7 @@ func (s *LoadTestServer) handleLoadTest(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json")
 	response := map[string]interface{}{
 		"status":  "started",
-		"message": fmt.Sprintf("Load test '%s' started. Results will be saved to loadtesting_logs_%s and loadtesting_metrics", req.Name, req.Name),
+		"message": fmt.Sprintf("Load test '%s' started. Results will be saved to loadtest_logs_%s and loadtest_metrics", req.Name, req.Name),
 		"name":    req.Name,
 		"config": map[string]interface{}{
 			"threads":        req.Threads,

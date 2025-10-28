@@ -207,7 +207,7 @@ func (h *MongoHelper) CollectionExists(ctx context.Context, collectionName strin
 }
 
 func (h *MongoHelper) LoadTestNameExists(ctx context.Context, testName string) (bool, error) {
-	collection := h.db.Collection("loadtesting_metrics")
+	collection := h.db.Collection("loadtest_metrics")
 	
 	count, err := collection.CountDocuments(ctx, bson.M{"name": testName})
 	if err != nil {
