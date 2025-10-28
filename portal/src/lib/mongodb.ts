@@ -18,3 +18,8 @@ export async function getHealthChecksCollection() {
   const db = await connectToDatabase();
   return db.collection('healthchecks');
 }
+
+export async function getLoadTestMetricsCollection() {
+  const db = await connectToDatabase();
+  return db.collection('loadtest_metrics');
+}

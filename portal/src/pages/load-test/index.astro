@@ -1,0 +1,117 @@
+---
+import LoadTestForm from "@/components/dialogs/LoadTest.astro";
+import Layout from "@/layouts/Layout.astro";
+
+// Fetch load test results
+let loadTests = [];
+try {
+    const response = await fetch('http://localhost:4321/api/load-test');
+    const data = await response.json();
+    if (data.success) {
+        loadTests = data.data;
+    }
+} catch (error) {
+    console.error('Failed to fetch load tests:', error);
+}
+---
+
+<Layout>
+    <main class="px-16 pt-8 gap-8 flex flex-col">
+        <header class="flex justify-between items-center">
+            <div class="flex flex-col">
+                <h1 class="text-3xl font-semibold">Load Test</h1>
+                <p class="text-gray-600">
+                    Test endpoint performance with multiple concurrent threads
+                </p>
+            </div>
+            <button
+                popovertarget="new-load-test"
+                class="bg-black hover:bg-gray-800 text-white py-2 px-4 rounded-lg transition-colors"
+            >
+                + New Load Test
+            </button>
+        </header>
+
+        {loadTests.length === 0 ? (
+            <div class="flex flex-col items-center gap-4 border-2 border-dashed border-gray-300 p-16 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                </svg>
+                <h3 class="font-semibold text-xl">No Load Tests Yet</h3>
+                <p class="text-gray-600 text-center max-w-md">
+                    Create your first load test to evaluate your endpoint
+                    performance under concurrent requests
+                </p>
+                <button
+                    popovertarget="new-load-test"
+                    class="bg-black hover:bg-gray-800 text-white py-2 px-4 rounded-lg transition-colors mt-2"
+                >
+                    Create Load Test
+                </button>
+            </div>
+        ) : (
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {loadTests.map((test) => (
+                    <a 
+                        href={`/load-test/${test.name}`} 
+                        class="border border-gray-200 rounded-lg p-6 hover:border-gray-400 hover:shadow-md transition-all cursor-pointer group"
+                    >
+                        <div class="flex flex-col gap-3">
+                            <div class="flex items-start justify-between">
+                                <h3 class="text-xl font-semibold group-hover:text-gray-700">
+                                    {test.name}
+                                </h3>
+                                <span class={`text-xs px-2 py-1 rounded font-medium ${
+                                    test.successRate >= 95 
+                                        ? 'bg-green-100 text-green-800' 
+                                        : test.successRate >= 80 
+                                        ? 'bg-yellow-100 text-yellow-800' 
+                                        : 'bg-red-100 text-red-800'
+                                }`}>
+                                    {test.successRate.toFixed(1)}%
+                                </span>
+                            </div>
+                            
+                            <p class="text-sm text-gray-600 truncate font-mono">
+                                {test.testConfig.url}
+                            </p>
+                            
+                            <div class="flex flex-wrap gap-2">
+                                <span class="text-xs bg-gray-100 px-2 py-1 rounded font-medium">
+                                    {test.testConfig.method}
+                                </span>
+                                <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                                    {test.testConfig.threads} threads
+                                </span>
+                                <span class="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded">
+                                    {test.totalRequests} reqs
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 mt-2 pt-3 border-t border-gray-100">
+                                <div class="flex flex-col">
+                                    <span class="text-xs text-gray-500">Avg Response</span>
+                                    <span class="text-sm font-semibold">
+                                        {test.averageTime.toFixed(0)}ms
+                                    </span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-xs text-gray-500">RPS</span>
+                                    <span class="text-sm font-semibold">
+                                        {test.requestsPerSecond.toFixed(1)}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="text-xs text-gray-400 mt-1">
+                                {new Date(test.timestamp).toLocaleString()}
+                            </div>
+                        </div>
+                    </a>
+                ))}
+            </div>
+        )}
+
+        <LoadTestForm />
+    </main>
+</Layout>
