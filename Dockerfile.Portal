@@ -1,0 +1,21 @@
+FROM node:24-alpine AS build
+WORKDIR /app
+
+RUN npm install -g pnpm
+
+COPY package*.json pnpm-workspace.yaml ./
+RUN pnpm install
+
+COPY . .
+RUN pnpm build
+
+FROM node:24-alpine
+WORKDIR /app
+
+RUN npm install -g pnpm
+COPY --from=build /app/dist ./dist
+COPY package*.json pnpm-workspace.yaml ./
+RUN pnpm install --prod
+
+EXPOSE 4321
+CMD ["node", "./dist/server/entry.mjs"]
