@@ -1,4 +1,3 @@
-// src/pages/api/health-checks.ts
 import type { APIRoute } from 'astro';
 import { getHealthChecksCollection } from '@/lib/mongodb';
 import { 

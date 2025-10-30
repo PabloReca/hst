@@ -1,86 +1,17 @@
-// src/pages/api/loadtest.ts
 import type { APIRoute } from 'astro';
 import { request } from 'undici';
 import { getLoadTestMetricsCollection } from '@/lib/mongodb';
+import { 
+  validateLoadTestName,
+  validateURL,
+  validateThreads,
+  validateCallsPerThread
+} from '@/lib/validations';
 
 export const prerender = false;
 
 const GO_SERVICE_URL = 'http://localhost:8080';
 
-// Validaciones
-function validateLoadTestName(name: string): { valid: boolean; error?: string; normalized?: string } {
-  if (!name || typeof name !== 'string') {
-    return { valid: false, error: 'Name is required' };
-  }
-  
-  const trimmed = name.trim();
-  if (trimmed.length === 0) {
-    return { valid: false, error: 'Name cannot be empty' };
-  }
-  
-  if (trimmed.length > 100) {
-    return { valid: false, error: 'Name must be less than 100 characters' };
-  }
-  
-  // Normalizar: convertir a snake_case y remover caracteres especiales
-  const normalized = trimmed
-    .toLowerCase()
-    .replace(/\s+/g, '_')
-    .replace(/[^a-z0-9_-]/g, '');
-  
-  if (normalized.length === 0) {
-    return { valid: false, error: 'Name must contain alphanumeric characters' };
-  }
-  
-  return { valid: true, normalized };
-}
-
-function validateURL(url: string): { valid: boolean; error?: string } {
-  if (!url || typeof url !== 'string') {
-    return { valid: false, error: 'URL is required' };
-  }
-  
-  try {
-    new URL(url);
-    return { valid: true };
-  } catch {
-    return { valid: false, error: 'Invalid URL format' };
-  }
-}
-
-function validateThreads(threads: number): { valid: boolean; error?: string } {
-  if (typeof threads !== 'number' || !Number.isInteger(threads)) {
-    return { valid: false, error: 'Threads must be an integer' };
-  }
-  
-  if (threads < 1) {
-    return { valid: false, error: 'Threads must be at least 1' };
-  }
-  
-  if (threads > 1000) {
-    return { valid: false, error: 'Threads cannot exceed 1000' };
-  }
-  
-  return { valid: true };
-}
-
-function validateCallsPerThread(calls: number): { valid: boolean; error?: string } {
-  if (typeof calls !== 'number' || !Number.isInteger(calls)) {
-    return { valid: false, error: 'CallsPerThread must be an integer' };
-  }
-  
-  if (calls < 1) {
-    return { valid: false, error: 'CallsPerThread must be at least 1' };
-  }
-  
-  if (calls > 10000) {
-    return { valid: false, error: 'CallsPerThread cannot exceed 10000' };
-  }
-  
-  return { valid: true };
-}
-
-// GET - Obtener todos los load tests
 export const GET: APIRoute = async () => {
   try {
     const collection = await getLoadTestMetricsCollection();
@@ -116,12 +47,10 @@ export const GET: APIRoute = async () => {
   }
 };
 
-// POST - Crear y ejecutar load test (proxy al servicio Go)
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
     
-    // Validaciones
     const nameValidation = validateLoadTestName(body.name);
     if (!nameValidation.valid) {
       return new Response(
@@ -156,7 +85,6 @@ export const POST: APIRoute = async ({ request }) => {
 
     const normalizedName = nameValidation.normalized!;
     
-    // Verificar si ya existe un load test con ese nombre
     const collection = await getLoadTestMetricsCollection();
     const existing = await collection.findOne({ name: normalizedName });
     
@@ -170,7 +98,6 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Preparar payload para el servicio Go
     const payload = {
       name: normalizedName,
       url: body.url,
@@ -183,7 +110,6 @@ export const POST: APIRoute = async ({ request }) => {
       expectedStatusCode: body.expectedStatusCode || 200
     };
 
-    // Enviar request al servicio Go usando undici
     console.log(`[API] Sending load test request to Go service: ${normalizedName}`);
     
     const { statusCode, body: responseBody } = await request(
