@@ -25,5 +25,29 @@ services:
     depends_on:
       - mongo
 
+  backend:
+    image: hst-backend
+    container_name: hst-backend
+    depends_on:
+      - mongo
+    ports:
+      - "8080:8080"
+    environment:
+      MONGO_URI: mongodb://admin:password123@mongodb:27017
+    restart: on-failure
+
+  portal:
+    build:
+      context: ./portal
+      dockerfile: Dockerfile
+    container_name: hst-portal
+    ports:
+      - "3000:4321"
+    depends_on:
+      - backend
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0      
+
 volumes:
   mongo-data:
