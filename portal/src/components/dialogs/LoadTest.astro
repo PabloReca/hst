@@ -207,7 +207,7 @@ import Select from "@/components/forms/Select.astro";
         };
 
         try {
-            const response = await fetch('/api/loadtest', {
+            const response = await fetch('/api/load-test', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)

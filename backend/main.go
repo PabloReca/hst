@@ -15,13 +15,23 @@ import (
 func main() {
 	ctx := context.Background()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://admin:password123@localhost:27017"))
+	mongoURI := os.Getenv("MONGO_URI")
+	if mongoURI == "" {
+		mongoURI = "mongodb://admin:password123@localhost:27017"
+	}
+
+	mongoDatabase := os.Getenv("MONGO_DATABASE")
+	if mongoDatabase == "" {
+		mongoDatabase = "hts-config"
+	}
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		log.Fatal("Failed to connect to MongoDB:", err)
 	}
 	defer client.Disconnect(ctx)
 
-	db := client.Database("hts-config")
+	db := client.Database(mongoDatabase)
 	log.Println("Connected to MongoDB")
 
 	clock := NewClock()

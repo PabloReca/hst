@@ -3,10 +3,10 @@ WORKDIR /app
 
 RUN npm install -g pnpm
 
-COPY package*.json pnpm-workspace.yaml ./
+COPY portal/package*.json portal/pnpm-workspace.yaml ./
 RUN pnpm install
 
-COPY . .
+COPY portal/ .
 RUN pnpm build
 
 FROM node:24-alpine
@@ -14,7 +14,7 @@ WORKDIR /app
 
 RUN npm install -g pnpm
 COPY --from=build /app/dist ./dist
-COPY package*.json pnpm-workspace.yaml ./
+COPY portal/package*.json portal/pnpm-workspace.yaml ./
 RUN pnpm install --prod
 
 EXPOSE 4321

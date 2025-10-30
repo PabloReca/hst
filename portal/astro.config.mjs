@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig, envField } from 'astro/config';
 import node from '@astrojs/node';
 import tailwindcss from '@tailwindcss/vite';
 
@@ -11,5 +11,17 @@ export default defineConfig({
   }),
   vite: {
     plugins: [tailwindcss()]
+  },
+  env: {
+    schema: {
+      MONGO_URI: envField.string({
+        context: 'server',
+        access: 'secret',
+      }),
+      MONGO_DATABASE: envField.string({
+        context: 'server',
+        access: 'secret',
+      })
+    }
   }
 });

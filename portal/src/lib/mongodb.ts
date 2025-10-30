@@ -1,7 +1,9 @@
 // src/lib/mongodb.ts
 import { MongoClient } from 'mongodb';
+import { MONGO_URI, MONGO_DATABASE } from 'astro:env/server';
 
-const uri = `mongodb://admin:password123@localhost:27017`;
+const uri = MONGO_URI;
+const database = MONGO_DATABASE;
 const client = new MongoClient(uri);
 
 let isConnected = false;
@@ -11,7 +13,7 @@ export async function connectToDatabase() {
     await client.connect();
     isConnected = true;
   }
-  return client.db('hts-config');
+  return client.db(database);
 }
 
 export async function getHealthChecksCollection() {

@@ -1,5 +1,4 @@
 import type { APIRoute } from 'astro';
-import { request } from 'undici';
 import { getLoadTestMetricsCollection } from '@/lib/mongodb';
 import { 
   validateLoadTestName,
@@ -112,7 +111,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     console.log(`[API] Sending load test request to Go service: ${normalizedName}`);
     
-    const { statusCode, body: responseBody } = await request(
+    const goResponse = await fetch(
       `${GO_SERVICE_URL}/loadtest`,
       {
         method: 'POST',
@@ -123,9 +122,9 @@ export const POST: APIRoute = async ({ request }) => {
       }
     );
 
-    const responseData = await responseBody.json();
+    const responseData = await goResponse.json();
 
-    if (statusCode === 200 || statusCode === 201) {
+    if (goResponse.status === 200 || goResponse.status === 201) {
       console.log(`[API] Load test started successfully: ${normalizedName}`);
       
       return new Response(
@@ -134,12 +133,12 @@ export const POST: APIRoute = async ({ request }) => {
           ...responseData
         }),
         {
-          status: statusCode,
+          status: goResponse.status,
           headers: { 'Content-Type': 'application/json' }
         }
       );
     } else {
-      console.error(`[API] Go service returned error: ${statusCode}`, responseData);
+      console.error(`[API] Go service returned error: ${goResponse.status}`, responseData);
       
       return new Response(
         JSON.stringify({ 
@@ -147,7 +146,7 @@ export const POST: APIRoute = async ({ request }) => {
           error: responseData.error || 'Failed to start load test'
         }),
         {
-          status: statusCode,
+          status: goResponse.status,
           headers: { 'Content-Type': 'application/json' }
         }
       );
